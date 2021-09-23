@@ -1,4 +1,4 @@
-module bmp
+module https://github.com/glebik555/bmpSteganography
 
 go 1.16
 
