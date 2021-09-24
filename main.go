@@ -129,7 +129,7 @@ func insertMessage(img image.Image, pixels [][]Pixel, message []uint) (int, int,
 					fmt.Println()
 					flagOfCR = false
 				}
-				if (countOfMessage < len(message)) && countOfMessage <= pow { // Возможно, здесь "<"
+				if (countOfMessage < len(message)) && countOfMessage <= pow {
 					if message[countOfMessage] == 0x01 {
 						var tmp = pixels[y][x].G
 						pixels[y][x].G |= 0x01
