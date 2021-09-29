@@ -60,6 +60,7 @@ func calculateSize(multiplication int) (degree,number int) {
 }
 
 func printBits(slice []bool) {
+
 	for i := 0; i < len(slice); i++ {
 		if slice[i] {
 			fmt.Print(1)
@@ -67,6 +68,21 @@ func printBits(slice []bool) {
 			fmt.Print(0)
 		}
 	}
+	fmt.Println()
+}
+
+func convertToInt(slice []bool, message []uint)[]uint{
+	counter:=0
+	for i := 0; i < len(slice); i++ {
+		if slice[i] {
+			message[counter] = 1
+			counter++
+		} else {
+			message[counter] = 0
+			counter++
+		}
+	}
+	return message
 }
 
 func ConvertInt(val string, base, toBase int) (string, error) {
@@ -215,26 +231,9 @@ func extractMessage(pixelsRec [][]Pixel, imgRec image.Image) []bool {
 	return containerText
 }
 
-func main() {
-	image.RegisterFormat("bmp", "bmp", bmp.Decode, bmp.DecodeConfig)
-
-	f, err := os.Open("pic\\norm.bmp")
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer f.Close()
-	pixels, img, err := getPixels(f)
-
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	lenOfMessage := 255
-	message := makeMessage(lenOfMessage)
+func startTranmission(message []uint, img image.Image, pixels [][]Pixel, path string){
 	fmt.Println("Message = ", message, ", length = ", len(message))
 	width, height, pixels := insertMessage(img, pixels, message)
-
 	if pixels == nil {
 		fmt.Println("\nError!")
 		os.Exit(1)
@@ -242,16 +241,17 @@ func main() {
 
 	newImg := writeImage(width, height, pixels)
 
-	s, err := os.Create("pic\\outimage.bmp")
+	s, err := os.Create(path)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 	bmp.Encode(s, newImg)
 	s.Close()
-	fmt.Println("\nDecoding")
+}
+func startDecode(path string) []uint{
 
-	file, err := os.Open("pic\\outimage.bmp")
+	file, err := os.Open(path)
 
 	if err != nil {
 		fmt.Println(err)
@@ -265,5 +265,37 @@ func main() {
 	}
 
 	containerText := extractMessage(pixelsRec, imgRec)
+	message := make([]uint, len(containerText))
 	printBits(containerText)
+	message = convertToInt(containerText,message)
+	return message
+}
+
+func selectFile(path string) (image.Image, [][]Pixel){
+	f, err := os.Open(path)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer f.Close()
+	pixels, img, err := getPixels(f)
+
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	return img, pixels
+}
+
+func main() {
+	image.RegisterFormat("bmp", "bmp", bmp.Decode, bmp.DecodeConfig)
+
+	img, pixels := selectFile("pic\\normal.bmp")
+	lenOfMessage := 10
+	message := makeMessage(lenOfMessage)
+
+	startTranmission(message,img,pixels,"pic\\outimage.bmp")
+	fmt.Println("\nDecoding")
+	startDecode("pic\\outimage.bmp")
+
 }
